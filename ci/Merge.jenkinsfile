@@ -1,0 +1,251 @@
+
+//################################################################################
+//# Copyright (c) 2017-2023 Dell Inc. or its subsidiaries.  All rights reserved.
+//################################################################################
+
+import groovy.transform.Field
+
+@Library(['jenkins-global-lib@main']) _
+
+
+// Initialize here so it is still available in post block if build fails.
+@Field String CHANGE_LOG = 'change.log'
+@Field String GRAFANA_UTILITIES = '/usr/local/utilities/grafana-utilities'
+@Field String JENKINS_PRODUCTION = 'https://osj-drp-01-prd.cec.lab.emc.com/'
+@Field String TEST_GIT_SERVER = 'https://durghedev.cec.lab.emc.com'
+@Field String TEST_GRAFANA_IP = '127.0.0.l'
+@Field String TOPIC = 'techops-jenkins-events'
+
+@Field Map<String, String> PRODUCTION = [
+  name:           'Production',
+  branch:         'origin/main',
+  credentials_id: 'production_grafana_dashboards',
+  server:         'https://drp-grafana.cec.lab.emc.com',
+  token:          'API_KEY_grafana_drp_grafana_cec_lab_emc_com'
+]
+@Field Map<String, String> STAGING = [
+  name:           'Staging',
+  branch:         'origin/staging',
+  credentials_id: 'staging_grafana_dashboards',
+  server:         'https://drp-grafana-stg.cec.lab.emc.com',
+  token:          'API_KEY_grafana_drp_grafana_stg_cec_lab_emc_com'
+]
+
+@Field Map<String, String> GITHUB = [
+  credentials_id: 'svc_npdrpcicd'
+]
+
+//################################################################################
+
+def addCommentToPr(String pr_url, String body) {
+
+    println 'pr_url = ' + pr_url + '\nbody = ' + body
+    if (pr_url) {
+        echo '#-------------------   Add comment to Pull Request ----------------#'
+        creds = isProd(GITHUB.credentials_id,'GH-pat')
+        withCredentials([string(credentialsId: creds, variable: 'GH_TOKEN')]) {
+            sh """
+            curl --silent --insecure --location --header "Authorization: token ${GH_TOKEN}" --header 'Content-Type: application/json' --request POST --data-raw '${body}' "${pr_url}" > addCommentToPr.log
+            """
+        }
+    }
+}
+
+def deployToGrafana(Map<String, String> params) {
+
+    if (params) {
+
+        echo '#------------------------ Deploy to ' + params.name + ' ------------------------#'
+
+        unstash 'changes'
+        def pr_changes = updateGrafana(params)
+        addCommentToPr( env.PR_COMMENTS,
+                        '{"body": "<b>Post merge action:</b> <a href=\\"' + \
+                         env.BUILD_URL + '\\">Jenkins</a> has made the following changes for this PR to <a href=\\"' +  \
+                         params.server + '\\">Grafana ' + params.name + ':</a>' + \
+                         toHtml(pr_changes) + '"}'
+                       )
+
+        echo '#---------------------------------------------------------#'
+    }
+}
+
+@NonCPS
+def getParams() {
+
+    Map<String,String> params = null
+
+    if (env.GIT_BRANCH == STAGING.branch) {
+        params = STAGING
+    }
+    if (env.GIT_BRANCH == PRODUCTION.branch) {
+        params = PRODUCTION
+    }
+    if (env.GIT_URL.startsWith(TEST_GIT_SERVER)) {
+        TEST_GRAFANA_IP = env.TEST_GRAFANA_IP ?: '10.118.249.46'
+        return [
+            name:           params.name,
+            branch:         params.branch,
+            credentials_id: env.TEST_API_KEY ?: 'test_grafana_dashboards',
+            server:         'https://' + TEST_GRAFANA_IP + '/grafana',
+            token:          'API_KEY_grafana_' + TEST_GRAFANA_IP.replace('.', '_')
+        ]
+    }
+    return params
+}
+
+@NonCPS
+def isProd(a,b) {
+    return (env.JENKINS_URL == JENKINS_PRODUCTION) ? a : b
+}
+
+@NonCPS
+def toHtml(String body) {
+
+    def lines = '<br/>'
+    def prev = null
+    body.eachLine { line ->
+        if (line.length() > 0) {
+           line = line.replaceAll(/\x1b\[\d+m/, '')
+        }
+        if (line.length() > 0) {
+           def next = line.substring(0,1)
+           if (next == ' ') {
+              line = (prev != ' ' ? '<ul>' : '') + '<li>' + line + '</li>'
+           }
+           else if (prev != null) {
+              line = (prev = ' ' ? '</ul>' : '') + line
+           }
+           prev = next
+           lines += line
+        }
+    }
+    lines += '<br/>'
+}
+
+def updateGrafana(Map<String, String> params) {
+
+    echo GRAFANA_UTILITIES + ' -s ' + params.server + ' updateServer ' + CHANGE_LOG
+    def result = ''
+    withCredentials([string(credentialsId: params.credentials_id, variable: params.token)]) {
+	result = sh (returnStdout: true, script: GRAFANA_UTILITIES + ' -s ' + params.server + ' updateServer ' + CHANGE_LOG)
+        echo result
+    }
+    return result
+}
+
+//################################################################################
+
+pipeline {
+    agent {
+        kubernetes {
+            defaultContainer 'jnlp'
+            yamlFile 'ci/merge-pipeline.yaml'
+            showRawYaml(false)
+        }
+    }
+
+    triggers {
+        GenericTrigger(
+            genericHeaderVariables: [
+                [key: 'x_github_event', regexpFilter: 'pull_request']
+            ],
+            genericVariables: [
+                [
+                    key: 'BRANCH_REF',
+                    value: '$.pull_request.base.ref',
+                    expressionType: 'JSONPath'           //Optional, defaults to JSONPath
+                ],
+                [
+                    key: 'PR_action',
+                    value: '$.action',
+                    expressionType: 'JSONPath'          //Optional
+                ],
+                [
+                    key: 'PR_number',
+                    value: '$.number',
+                    expressionType: 'JSONPath'          //Optional
+                ],
+                [
+                    key: 'PR_state',
+                    value: '$.pull_request.state',
+                    expressionType: 'JSONPath'          //Optional
+                ],
+                [
+                    key: 'PR_URL',
+                    value: '$.pull_request.html_url',
+                    expressionType: 'JSONPath'          //Optional
+                ],
+                [
+                    key: 'PR_COMMENTS',
+                    value: '$.pull_request.comments_url',
+                    expressionType: 'JSONPath'          //Optional
+                ]
+            ],
+            causeString: 'Triggered by a merge to ${BRANCH_REF} by #PR-${PR_number}: ${PR_URL}',
+            token: 'private-token',
+	    tokenCredentialId: '',
+            printContributedVariables: false,
+            printPostContent: false,
+            silentResponse: false,
+
+            // only trigger when
+            //        : action == 'closed'
+            //        : AND pull_request.state == 'closed'
+            //        : AND pull_request.base.ref is either: 'staging' or 'main'
+            regexpFilterText: '${PR_action}_${PR_state}_${BRANCH_REF}',
+            regexpFilterExpression: 'closed_closed_(staging|main)'
+        )
+    }
+
+    environment {
+        DEBUG = isProd(0,1)
+        GIT_LFS_SKIP_SMUDGE = 1
+    }
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+        disableConcurrentBuilds()
+        disableResume()
+        timestamps()
+        ansiColor('xterm')
+    }
+
+    parameters {
+        // define these as params so that the 'GenericTrigger' plugin sets environment variables
+        string(name: 'PR_COMMENTS', defaultValue: '', description: '** DO NOT specify any value. This is populated by the "GenericTrigger" plugin**')
+    }
+
+    stages {
+      stage('Get changes') {
+        steps {
+          container(name: 'jnlp') {
+              //------------------- create ChangeLog file -------------------
+              sh 'ci/gitChangeLog.sh ' + CHANGE_LOG
+              stash includes: CHANGE_LOG, name: 'changes'
+              //-------------------  ChangeLog file created  -------------------
+          }
+        }
+      }
+
+      stage('Deploy changes') {
+        steps {
+          container(name: 'utilities') {
+              deployToGrafana getParams()
+          }
+        }
+      }
+    }
+
+    post {
+        always {
+            archiveArtifacts allowEmptyArchive: true, artifacts: '*.log', followSymlinks: false
+            script {
+                if (env.JENKINS_URL == JENKINS_PRODUCTION) {
+                    reportBuildResult(script: this, topic: TOPIC)
+                    drp_SendEmail()
+                }
+            }
+        }
+    }
+}
