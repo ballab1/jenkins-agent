@@ -1,10 +1,10 @@
 
 env:
-    BASE_TAG: '3.13.2-alpine3.21'
+    BASE_TAG: '3283.v92c105e0f819-8-alpine-jdk21'
     CBF_VERSION: 'v3.9.10'
     CONTAINER_GIT_URL: 'https://nas.home:5001/GIT/jenkins-agent'
     CONTAINER_OS: 'alpine'
-    CONTAINER_NAME: 'jenkins-agent'
+    CONTAINER_NAME: 'jenkins/inbound-agent'
     #DEBUG_TRACE: '0'
     DEV_TEAM: 'alpine'
     DOCKER_LOG_DIR: '/var/log'
@@ -15,8 +15,8 @@ env:
     WORK_DIR: '/usr/local/utilities'
     HOST_IPS: "$(hostname -i)"
     USER_ID: "$(getent passwd $UID|awk '{split($0, arr, \":\"); print arr[3] \":\" arr[4]}')"
-    FROM_BASE: "s2.ubuntu.home:5000/docker.io/python:${BASE_TAG:?}"
-    TARGET: "${DOCKER_REGISTRY:-s2.ubuntu.home:5000/}${DEV_TEAM:-alpine}/${CONTAINER_NAME:?}/3.13.2-alpine3.21:${CONTAINER_TAG:-latest}"
+    FROM_BASE: "${DOCKER_REGISTRY}docker.io/${CONTAINER_NAME:?}:${BASE_TAG}"
+    TARGET: "${DOCKER_REGISTRY}${DEV_TEAM}/${CONTAINER_NAME:?}/${BASE_TAG}:${CONTAINER_TAG:-latest}"
 
 
 # the above may also be specified using 'ini' format

@@ -4,7 +4,7 @@
 
 [ "${DEBUG:-0}" != 0 ] && set -x
 
-KANIKO_IMAGE="${DOCKER_REGISTRY:-s2.ubuntu.home:5000/}docker.io/bitnami/kaniko:1.23.2-debian-12-r19"
+KANIKO_IMAGE="${DOCKER_REGISTRY:-s2.ubuntu.home:5000/}docker.io/bitnami/kaniko:1.25.0-debian-12-r4"
 
 ################################################################################
 build() {
@@ -43,6 +43,7 @@ build_cmd() {
 build_params() {
     printf '%s \n' \
        '--cache=false' \
+       "--insecure-registry '${DOCKER_REGISTRY:-s2.ubuntu.home:5000/}'" \
        '--insecure' \
        '--skip-tls-verify' \
        '--verbosity info' \
