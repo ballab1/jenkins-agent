@@ -22,7 +22,7 @@ spec:
         - mountPath: /home/jenkins
           name: sharedvolume
     - name: builder
-      image: amaas-eos-mw1.cec.lab.emc.com:5060/thirdparty/debian/uspy_template_builder:
+      image: s2.ubuntu.home:5000/thirdparty/debian/uspy_template_builder:
       command:
         - /bin/cat
       imagePullPolicy: Always
