@@ -3,17 +3,17 @@ services:
     jenkins_agent:
         build:
             args:
-                BASE_TAG: '3327.v868139a_d00e0-7-alpine-jdk21'
+                BASE_TAG: '3345.v03dee9b_f88fc-1-alpine-jdk21'
                 CBF_VERSION: 'v3.9.10'
                 DEV_TEAM: 'alpine'
                 DOCKER_LOG_DIR: '/var/log'
                 DOCKER_REGISTRY: 'registry.ubuntu.home/'
-                FROM_BASE: '${DOCKER_REGISTRY:-}docker.io/jenkins/inbound-agent:3327.v868139a_d00e0-7-alpine-jdk21'
+                FROM_BASE: '${DOCKER_REGISTRY:-}docker.io/jenkins/inbound-agent:3345.v03dee9b_f88fc-1-alpine-jdk21'
                 HOST_IPS: '10.3.1.10'
                 OS_VERSION: '3.21.3'
                 PIP_VERSION: '24.3.1'
                 PYTHON_VERSION: '3.13.2'
-                TARGET: '${DOCKER_REGISTRY:-}alpine/jenkins/inbound-agent/3327.v868139a_d00e0-7-alpine-jdk21:abefed59fa'
+                TARGET: '${DOCKER_REGISTRY:-}alpine/jenkins/inbound-agent/3345.v03dee9b_f88fc-1-alpine-jdk21:abefed59fa'
                 USER_ID: '1000'
                 WORK_DIR: '/usr/local/utilities'
             context: .
@@ -26,10 +26,10 @@ services:
                 container.git.refs: 'HEAD -> main'
                 container.git.url: 'https://nas.home:5001/GIT/jenkins-agent'
                 container.name: 'jenkins/inbound-agent'
-                container.origin: 'abefed5-dirty'
+                container.origin: 'abefed5'
                 container.os: 'alpine'
-                container.parent: '${DOCKER_REGISTRY:-}docker.io/jenkins/inbound-agent:3327.v868139a_d00e0-7-alpine-jdk21'
+                container.parent: '${DOCKER_REGISTRY:-}docker.io/jenkins/inbound-agent:3345.v03dee9b_f88fc-1-alpine-jdk21'
                 container.tag: 'abefed59fa'
         container_name: jenkins_agent
         hostname: jenkins-agent
-        image: ${DOCKER_REGISTRY:-}alpine/jenkins/inbound-agent/3327.v868139a_d00e0-7-alpine-jdk21
+        image: ${DOCKER_REGISTRY:-}alpine/jenkins/inbound-agent/3345.v03dee9b_f88fc-1-alpine-jdk21

@@ -1,4 +1,4 @@
-BASE_TAG: '3283.v92c105e0f819-8-alpine-jdk21'
+BASE_TAG: '3345.v03dee9b_f88fc-1-alpine-jdk21'
 CBF_VERSION: 'v3.9.10'
 CONTAINER_GIT_URL: 'https://nas.home:5001/GIT/jenkins-agent'
 CONTAINER_OS: 'alpine'

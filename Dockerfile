@@ -1,4 +1,4 @@
-ARG FROM_BASE=${FROM_BASE:-${DOCKER_REGISTRY}docker.io/jenkins/inbound-agent:3327.v868139a_d00e0-7-alpine-jdk21}
+ARG FROM_BASE=${FROM_BASE:-${DOCKER_REGISTRY}docker.io/jenkins/inbound-agent:3345.v03dee9b_f88fc-1-alpine-jdk21}
 FROM $FROM_BASE
 
 WORKDIR /tmp

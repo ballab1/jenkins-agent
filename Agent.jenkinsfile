@@ -4,7 +4,7 @@ pipeline {
     agent { label 's3.ubuntu.home' }
 
     environment {
-        DOCKER_IMAGE = 'registry.ubuntu.home/alpine/jenkins/inbound-agent/3283.v92c105e0f819-8-alpine-jdk21'
+        DOCKER_IMAGE = 'registry.ubuntu.home/alpine/jenkins/inbound-agent/3345.v03dee9b_f88fc-1-alpine-jdk21'
         DOCKER_REGISTRY = 'registry.ubuntu.home'  // e.g., index.docker.io or registry.example.com
         DOCKER_CREDENTIALS_ID = '1a69cdbb-be20-4bde-b30a-87ef9b2db969'
     }
