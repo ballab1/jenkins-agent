@@ -1,35 +1,31 @@
 
 services:
-    jenkins_agent:
+    container:
+        env: .env
         build:
             args:
-                BASE_TAG: '3345.v03dee9b_f88fc-1-alpine-jdk21'
-                CBF_VERSION: 'v3.9.10'
-                DEV_TEAM: 'alpine'
-                DOCKER_LOG_DIR: '/var/log'
-                DOCKER_REGISTRY: 'registry.ubuntu.home/'
-                FROM_BASE: '${DOCKER_REGISTRY:-}docker.io/jenkins/inbound-agent:3345.v03dee9b_f88fc-1-alpine-jdk21'
-                HOST_IPS: '10.3.1.10'
-                OS_VERSION: '3.21.3'
-                PIP_VERSION: '24.3.1'
-                PYTHON_VERSION: '3.13.2'
-                TARGET: '${DOCKER_REGISTRY:-}alpine/jenkins/inbound-agent/3345.v03dee9b_f88fc-1-alpine-jdk21:abefed59fa'
+                BASE_TAG: "${BASE_TAG:?}"
+                DOCKER_LOG_DIR: "${DOCKER_LOG_DIR:?}"
+                DOCKER_REGISTRY: "${DOCKER_REGISTRY:?}"
+                FROM_BASE: "${FROM_BASE:?}"
+                HOST_IPS: "${HOST_IPS:?}"
+                OS_VERSION: "${OS_VERSION:?}"
+                PIP_VERSION: '"${PIP_VERSION:?}"
+                PYTHON_VERSION: "${PYTHON_VERSION:?}"
                 USER_ID: '1000'
-                WORK_DIR: '/usr/local/utilities'
+                WORK_DIR: "${WORK_DIR:?}"
             context: .
             dockerfile: Dockerfile
             labels:
-                container.build.host: 's3.ubuntu.home'
-                container.build.time: '2026-07-25T11:23:39.847381277Z'
-                container.fingerprint: '<.. TBD: calculate from git tree and ENV ..>'
-                container.git.commit: 'abefed59fa3a4de5a856c4e08a8bf8354032c7d9'
-                container.git.refs: 'HEAD -> main'
-                container.git.url: 'https://nas.home:5001/GIT/jenkins-agent'
-                container.name: 'jenkins/inbound-agent'
-                container.origin: 'abefed5'
-                container.os: 'alpine'
-                container.parent: '${DOCKER_REGISTRY:-}docker.io/jenkins/inbound-agent:3345.v03dee9b_f88fc-1-alpine-jdk21'
-                container.tag: 'abefed59fa'
-        container_name: jenkins_agent
-        hostname: jenkins-agent
-        image: ${DOCKER_REGISTRY:-}alpine/jenkins/inbound-agent/3345.v03dee9b_f88fc-1-alpine-jdk21
+                container.build.host: "${CONTAINER_BUILD_HOST:?}"
+                container.build.time: "${CONTAINER_BUILD_TIME:?}"
+                container.fingerprint: "${CONTAINER_FINGERPRINT:?}"
+                container.git.commit: "${CONTAINER_GIT_COMMIT:?}"
+                container.git.refs: "${CONTAINER_GIT_REFS:?}"
+                container.git.url: "${CONTAINER_GIT_URL:?}"
+                container.name: "${CONTAINER_NAME:?}"
+                container.origin: "${CONTAINER_TAG:?}"
+                container.os: "${CONTAINER_OS:?}"
+                container.parent: "${CONTAINER_PARENT:?}"
+                container.tag: "${CONTAINER_TAG:?}"
+        image: "${TARGET:?}"
