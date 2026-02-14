@@ -37,6 +37,7 @@ function ci::docker_compose()
         echo "docker rmi '$PREVIOUS'"
         docker rmi "$PREVIOUS" ||:
         # update running image
+        #shellcheck disable=SC2016
         local UPDATE_TAG="$(grep -E '^#UPDATE_TAG=' project.settings | awk '{print substr($0,13)}'| sed 's|${TARGET}|'"${TARGET}"'|' )"
         echo "$UPDATE_TAG"
         echo "$($UPDATE_TAG)"
@@ -194,15 +195,15 @@ function ci::initialize()
         fi
         [ "$(basename "$WORKSPACE")" = 'ci' ] && WORKSPACE="$(dirname "$WORKSPACE")"
     fi
-    # remove any training backslash
-    WORKSPACE="$(echo $WORKSPACE | sed 's:/*$::')"
+    # remove any trailing backslash
+    WORKSPACE="${WORKSPACE%/}"
     cd "$WORKSPACE" ||:
 
     export DOCKER_SECRET=${WORKSPACE}/.secret.json
     export HOSTNAME="$(hostname -f)"
     export WORK_DIR='/usr/local/service'
 
-    readonly CONTEXT DOCKER_SECRET GID HOSTNAME HOST_IPS PROGRAM_DIR PROGRAM_NAME PROJECT_SETTINGS ROOT_DIR USER_ID WORK_DIR WORKSPACE
+    readonly CONTEXT DOCKER_SECRET GID HOSTNAME HOST_IPS PROGRAM_DIR PROGRAM_NAME PROJECT_SETTINGS ROOT_DIR WORK_DIR WORKSPACE
 }
 
 #--------------------------------------------------------------------------------
@@ -373,7 +374,7 @@ function ci::build_cmd() {
 #--------------------------------------------------------------------------------
 function ci::exit_handler() {
     # ensure we delete any files created
-    [ -f $DOCKER_SECRET ] && rm $DOCKER_SECRET
+    [ -f "$DOCKER_SECRET" ] && rm "$DOCKER_SECRET"
 }
 
 #--------------------------------------------------------------------------------
@@ -403,6 +404,8 @@ function ci::build_params() {
 #--------------------------------------------------------------------------------
 function ci::print_arg () {
     arg=$1
+    #shellcheck disable=SC2086
     eval argval=\"\$$arg\"
+    @shellcheck disable=SC2154
     echo "$argval"
 }
