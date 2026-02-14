@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# useful script for debugging any BASH script, just prefix your script command line with this script. This script can also be aliased so you just put the alias as the prefix
+#  example:   normal command:  '~/runme.sh'    debugging command:  'debugBashScript ~/runme.sh'
+# produces output 'debug.log' which can be imported into Excel because
+#   - fields are tab delimited
+#   - header line provided for columns ('depth\tsource\tline #\tfunction\tstatement')
+
+declare app="$1"
+shift
+declare args=( "$@" )
+
+# determine if this script has been aliased
+declare alias
+[ -f  ~/.bash_aliases ] && alias="$(grep -E "^alias ${app}='" ~/.bash_aliases | cut -d '=' -f 2|cut -d "'" -f 2)"
+
+# if it is aliased, replace alias for actual script
+if [ "${alias:-}" ]; then
+    args=( ${alias} "${args[@]}" )
+    [ "${args[0]:0:1}" = '~' ] && args=( "${PWD}/${args[0]:1}" "${args[@]:1}" )
+else
+    args=( $app "${args[@]}" )
+fi
+
+# run provided script in debug mode and output to 'debug..log'
+echo -e 'depth\tsource\tline #\tfunction\tstatement' > /tmp/debug.log
+export PS4='+\011${BASH_SOURCE[0]}:\011${LINENO[0]}\011${FUNCNAME[0]:-}():\011'
+exec bash -x "${args[@]}" &>> /tmp/debug.log
