@@ -1,2 +1,7 @@
+archive
+.secret.json
+kaniko.args
 *.log
 **/.env
+**/kaniko.sh
+**/DOCKER_SECRET

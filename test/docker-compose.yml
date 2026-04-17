@@ -15,7 +15,7 @@ services:
                 USER_ID: '1000'
                 WORK_DIR: "${WORK_DIR:?}"
             context: .
-            dockerfile: Dockerfile
+            dockerfile: test/Dockerfile
             labels:
                 container.build.host: "${CONTAINER_BUILD_HOST:?}"
                 container.build.time: "${CONTAINER_BUILD_TIME:?}"

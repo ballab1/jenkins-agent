@@ -45,19 +45,7 @@ spec:
       volumeMounts:
         - name: workspace-volume
           mountPath: /home/jenkins/agent
-        - name: dockerconfigjson
-          mountPath: /kaniko/.docker/config.json
-          readOnly: true
-          subPath: config.json
       workspace: /home/jenkins/agent
-  imagePullSecrets:
-    - name: regcred
   volumes:
     - name: workspace-volume
       emptyDir: {}
-    - name: dockerconfigjson
-      secret:
-        secretName: regcred
-        items:
-          - key: .dockerconfigjson
-            path: config.json

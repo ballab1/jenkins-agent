@@ -1,0 +1,13 @@
+################################################################################
+# Definitions of REQUIRED variables
+################################################################################
+dependencies:
+    BUILD_VERSION:
+      - repo:  'https://github.com/ballab1/jenkins-agent.git'
+        files:
+            - 'containerBuildPod.yaml'
+    PYTHON_BUILD_VERSION:
+      - repo:  'https://github.com/ballab1/uspycommon-builder'
+        files:
+            - 'test/containerBuildPod.yaml'
+
